@@ -10,7 +10,8 @@
     "new-shop": "tsx scripts/new-shop.ts",
     "new-category": "tsx scripts/new-category.ts",
     "new-products": "tsx scripts/new-products.ts",
-    "new-product-threads": "tsx scripts/new-product-threads.ts"
+    "new-product-threads": "tsx scripts/new-product-threads.ts",
+    "rakuten-api": "tsx scripts/rakuten-api.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.7.0",

@@ -476,6 +476,7 @@ async function main() {
   let productUrls: string[] = []
   let limit = 10
   let fromJsonFile: string | null = null
+  const apiMode = args.includes('--api-mode') // Hybrid mode: use API data only, skip web scraping
   
   // Parse arguments
   if (args.includes('--from-json')) {
@@ -494,6 +495,10 @@ async function main() {
         productUrls = args.slice(1).filter(arg => arg.startsWith('http') && !arg.startsWith('--'))
       }
     }
+  }
+
+  if (apiMode && !fromJsonFile) {
+    console.warn('⚠️  --api-mode requires --from-json flag')
   }
   
   console.log('Starting product processing...')
@@ -586,8 +591,8 @@ async function main() {
       }
     }
     
-    // Step 2b: Get product URLs if not loading from JSON
-    if (products.length === 0) {
+    // Step 2b: Get product URLs if not loading from JSON and not in API mode
+    if (products.length === 0 && !apiMode) {
       if (productUrls.length === 0) {
         console.log(`\n🔍 Finding products (limit: ${limit})...`)
         productUrls = await findProductUrls(shop.domain, limit)
@@ -602,14 +607,21 @@ async function main() {
       }
     }
     
-    // Step 3: Get categories and filters
-    const allCategories = await getAllCategories(supabase)
-    const availableFilters = readAvailableFilters()
+    // Step 3: Get categories and filters (skip in API mode if not needed)
+    let allCategories: any[] = []
+    let availableFilters: string[] = []
     
-    console.log(`\n📦 Processing ${productUrls.length} products...\n`)
+    if (!apiMode) {
+      allCategories = await getAllCategories(supabase)
+      availableFilters = readAvailableFilters()
+    }
     
-    // Step 3: Process each product (if not loaded from JSON)
-    if (products.length === 0) {
+    if (!apiMode && productUrls.length > 0) {
+      console.log(`\n📦 Processing ${productUrls.length} products...\n`)
+    }
+    
+    // Step 3: Process each product (if not loaded from JSON and not in API mode)
+    if (products.length === 0 && !apiMode) {
       for (let i = 0; i < productUrls.length; i++) {
         const productUrl = productUrls[i]
         console.log(`\n[${i + 1}/${productUrls.length}] Processing: ${productUrl}`)
@@ -704,9 +716,20 @@ async function main() {
       console.log('\n\n💾 Inserting products into Supabase...')
       
       for (const product of products) {
-        if (!product.description || product.description.trim().length < 100) {
-          console.warn(`⚠️  Product "${product.title}" missing description, skipping...`)
-          continue
+        // In API mode, allow shorter descriptions or generate a basic one
+        const minDescriptionLength = apiMode ? 10 : 100
+        if (!product.description || product.description.trim().length < minDescriptionLength) {
+          if (apiMode && product.specifications) {
+            // Generate a basic description from specifications for API mode
+            const specs = product.specifications as any
+            product.description = `Product: ${product.title}. ${specs.manufacturer ? `Manufacturer: ${specs.manufacturer}. ` : ''}${specs.category ? `Category: ${specs.category}. ` : ''}${specs.instock !== undefined ? `Stock status: ${specs.instock ? 'In stock' : 'Out of stock'}.` : ''}`
+          } else if (!apiMode) {
+            console.warn(`⚠️  Product "${product.title}" missing description (needs at least 100 characters), skipping...`)
+            continue
+          } else {
+            console.warn(`⚠️  Product "${product.title}" missing description, skipping...`)
+            continue
+          }
         }
         
         try {
@@ -738,8 +761,13 @@ async function main() {
           
           console.log(`✅ Created product: ${product.title} (ID: ${insertedProduct.id})`)
           
+          // In API mode, output product ID for thread generation
+          if (apiMode) {
+            console.log(`   Product ID for threads: ${insertedProduct.id}`)
+          }
+          
           // Insert category associations
-          if (product.categories.length > 0) {
+          if (product.categories && product.categories.length > 0) {
             // Remove duplicates before inserting (additional safety check)
             const uniqueCategoryIds = [...new Set(product.categories)]
             
@@ -764,11 +792,14 @@ async function main() {
           }
           
           // Output product information for AI to generate threads
-          console.log(`\n📝 Thread generation needed for: ${product.title}`)
-          console.log(`   Product ID: ${insertedProduct.id}`)
-          console.log(`   Description: ${product.description.substring(0, 200)}...`)
-          console.log(`   Categories: ${product.categories.length}`)
-          console.log(`   Please generate 1-3 unique thread texts for this product`)
+          // Skip this message in API mode as rakuten-api.ts handles thread generation
+          if (!apiMode) {
+            console.log(`\n📝 Thread generation needed for: ${product.title}`)
+            console.log(`   Product ID: ${insertedProduct.id}`)
+            console.log(`   Description: ${product.description.substring(0, 200)}...`)
+            console.log(`   Categories: ${product.categories.length}`)
+            console.log(`   Please generate 1-3 unique thread texts for this product`)
+          }
           
         } catch (error) {
           console.error(`❌ Error inserting product "${product.title}": ${error}`)
