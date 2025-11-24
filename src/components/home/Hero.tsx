@@ -21,39 +21,25 @@ export function Hero() {
           <div className="absolute top-10 left-10 w-32 h-32 bg-festive-red/5 rounded-full blur-2xl -z-10"></div>
 
           <h1 className="font-serif text-6xl lg:text-8xl text-primary-950 leading-[1.1] mb-8 relative">
-            Blooming <br/>
+            Every <br/>
             <span className="italic font-light relative inline-block">
-              Gifts
+              heart
               <span className="absolute -top-2 -right-4 text-2xl animate-bounce">✨</span>
-            </span> – <br/>
-            Delivered
+            </span> wants <br/>
+            to be loved
           </h1>
           
           <p className="text-lg text-slate-600 mb-10 max-w-md leading-relaxed font-light">
-            We craft curated gift collections that speak from the heart. Find the perfect surprise for your little elves and loved ones.
+            Gifts are part of the bond of love. That's why I, your little elf, am here to help you find the perfect gifts for your loved ones.
           </p>
 
           <div className="flex flex-wrap gap-4">
              <Link 
                 href="/shop" 
-                className="px-8 py-4 bg-primary-950 text-white text-sm font-bold tracking-widest uppercase hover:bg-primary-800 transition-all shadow-lg hover:shadow-primary-900/20 hover:-translate-y-1"
+                className="px-8 py-4 bg-primary-950 text-white text-sm font-bold tracking-widest uppercase hover:bg-primary-800 transition-all rounded-[3px]"
               >
-                Shop Now
+                Shop now
               </Link>
-          </div>
-
-          {/* Testimonial/Quote */}
-          <div className="mt-16 flex gap-4 items-start">
-            <div className="w-12 h-12 rounded-full bg-slate-200 overflow-hidden flex-shrink-0 border-2 border-white shadow-md">
-               {/* Avatar placeholder */}
-               <div className="w-full h-full bg-secondary-200"></div>
-            </div>
-            <div>
-               <p className="font-serif text-lg italic text-slate-800 mb-2">
-                "The gifts are always magical, and the curation is truly artistic. I wouldn't go anywhere else."
-               </p>
-               <p className="text-xs font-bold uppercase tracking-wider text-slate-500">— Sophia Carter, Mom</p>
-            </div>
           </div>
         </div>
 
@@ -82,7 +68,7 @@ export function Hero() {
 
                    <div className="text-6xl mb-8 font-serif italic font-light text-white/90 animate-pulse">Magic is coming</div>
                    
-                   <div className="bg-white/5 backdrop-blur-sm p-8 rounded-3xl border border-white/10 shadow-2xl transform transition-transform group-hover:scale-105 duration-500">
+                   <div className="bg-white/5 backdrop-blur-sm p-8 rounded-[5px] border border-white/10 shadow-2xl transform transition-transform group-hover:scale-105 duration-500">
                       <ChristmasCountdown />
                    </div>
                    

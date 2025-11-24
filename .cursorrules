@@ -1,0 +1,33 @@
+# Design Guidelines for elf.baby Project
+
+## Visual Design Rules
+
+### Shadows
+- **DO NOT** add shadows to any elements when creating new functionality
+- Avoid using `shadow-*` Tailwind classes or CSS `box-shadow` properties
+
+### Border Radius
+
+#### General Elements
+- **Maximum border radius**: 5px
+- Use `rounded-[5px]` or `rounded-sm` (4px) in Tailwind
+- Never exceed 5px for any element
+
+#### Buttons
+- **Border radius**: 3px
+- Use `rounded-[3px]` in Tailwind
+- Apply consistently to all button elements
+
+#### Images
+- **Border radius**: 3px
+- Use `rounded-[3px]` in Tailwind
+- Apply to all image elements (`<img>`, `<Image>`, etc.)
+
+## Implementation Notes
+
+When writing code:
+- Always follow these border radius rules
+- Never add shadow effects to new components
+- Use Tailwind classes: `rounded-[3px]` for buttons/images, `rounded-[5px]` max for other elements
+- If using inline styles, ensure they comply with these limits
+

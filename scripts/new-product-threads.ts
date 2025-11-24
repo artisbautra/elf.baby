@@ -70,21 +70,44 @@ async function main() {
   const args = process.argv.slice(2)
   
   if (args.length === 0) {
-    console.error('Usage: tsx scripts/new-product-threads.ts <product-id> [--count <number>]')
+    console.error('Usage: tsx scripts/new-product-threads.ts <product-id> [--text "<thread text>"] [--keywords "<keywords>"] [--from-json <json-file>]')
     console.error('Examples:')
     console.error('  tsx scripts/new-product-threads.ts 5bcea2a4-0aff-4ebb-86ee-707d264a2291')
-    console.error('  tsx scripts/new-product-threads.ts <product-id> --count 3')
-    console.error('  npm run new-product-threads <product-id>')
+    console.error('  tsx scripts/new-product-threads.ts <product-id> --text "Thread text here" --keywords "keyword1, keyword2"')
+    console.error('  tsx scripts/new-product-threads.ts <product-id> --from-json threads.json')
+    console.error('  npm run new-product-threads <product-id> --text "Thread text" --keywords "keywords"')
     process.exit(1)
   }
   
   const productId = args[0]
+  let threadText: string | null = null
+  let threadKeywords: string | null = null
   let fromJsonFile: string | null = null
+  
+  // Parse --text argument (collect all arguments until --keywords or end)
+  if (args.includes('--text')) {
+    const textIndex = args.indexOf('--text')
+    const keywordsIndex = args.indexOf('--keywords')
+    const endIndex = keywordsIndex !== -1 ? keywordsIndex : args.length
+    // Join all arguments between --text and --keywords (or end)
+    threadText = args.slice(textIndex + 1, endIndex).join(' ')
+  }
+  
+  // Parse --keywords argument (collect all arguments until end or next --)
+  if (args.includes('--keywords')) {
+    const keywordsIndex = args.indexOf('--keywords')
+    // Join all remaining arguments after --keywords
+    threadKeywords = args.slice(keywordsIndex + 1).join(' ')
+  }
   
   // Parse --from-json argument
   if (args.includes('--from-json')) {
     const jsonIndex = args.indexOf('--from-json')
     fromJsonFile = args[jsonIndex + 1]
+    // If path doesn't start with tmp/, add it
+    if (fromJsonFile && !fromJsonFile.startsWith('tmp/') && !fromJsonFile.startsWith('/')) {
+      fromJsonFile = `tmp/${fromJsonFile}`
+    }
   }
   
   console.log('Product Threads Script')
@@ -119,13 +142,23 @@ async function main() {
     
     console.log(`✓ Found ${categoryTitles.length} categories`)
     
-    // Step 3: Generate keywords
-    const keywords = generateKeywords(product.title, categoryTitles)
+    // Step 3: Generate keywords (fallback if not provided)
+    const defaultKeywords = generateKeywords(product.title, categoryTitles)
+    const keywords = threadKeywords || defaultKeywords
     
-    // Step 4: Load threads from JSON or output information for AI
+    // Step 4: Load threads from direct parameters, JSON, or output information for AI
     let threads: ThreadInput[] = []
     
-    if (fromJsonFile) {
+    if (threadText) {
+      // Use thread text and keywords provided directly as parameters
+      console.log(`\n📝 Using provided thread text and keywords`)
+      threads = [{
+        text: threadText,
+        keywords: keywords
+      }]
+      console.log(`✓ Thread text length: ${threadText.length} characters`)
+      console.log(`✓ Keywords: ${keywords}`)
+    } else if (fromJsonFile) {
       // Load threads from JSON file
       console.log(`\n📂 Loading threads from JSON file: ${fromJsonFile}`)
       try {
@@ -152,16 +185,10 @@ async function main() {
       console.log(`Description: ${product.description?.substring(0, 500)}...`)
       console.log(`Categories: ${categoryTitles.join(', ')}`)
       console.log(`URL: ${product.url}`)
-      console.log(`\nSuggested keywords: ${keywords}`)
-      console.log('\n⚠️  Threads not provided. Please generate 1-3 unique thread texts for this product')
-      console.log('and save them to a JSON file, then run:')
-      console.log(`npm run new-product-threads ${productId} --from-json <json-file>`)
-      console.log('\nJSON format:')
-      console.log(JSON.stringify([
-        { text: 'Your first unique thread text here', keywords: keywords },
-        { text: 'Your second unique thread text here', keywords: keywords },
-        { text: 'Your third unique thread text here (optional)', keywords: keywords }
-      ], null, 2))
+      console.log(`\nSuggested keywords: ${defaultKeywords}`)
+      console.log('\n⚠️  Thread not provided. Please provide thread text using:')
+      console.log(`   npm run new-product-threads ${productId} --text "<thread text>" --keywords "<keywords>"`)
+      console.log(`   OR save to JSON and use: npm run new-product-threads ${productId} --from-json <json-file>`)
       process.exit(0)
     }
     

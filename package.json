@@ -11,7 +11,9 @@
     "new-category": "tsx scripts/new-category.ts",
     "new-products": "tsx scripts/new-products.ts",
     "new-product-threads": "tsx scripts/new-product-threads.ts",
-    "rakuten-api": "tsx scripts/rakuten-api.ts"
+    "generate-missing-threads": "tsx scripts/generate-missing-threads.ts",
+    "rakuten-api": "tsx scripts/rakuten-api.ts",
+    "amazon-bestsellers": "tsx scripts/amazon-bestsellers.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.7.0",
@@ -24,6 +26,7 @@
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
+    "@tailwindcss/typography": "^0.5.19",
     "@types/node": "^20",
     "@types/pg": "^8.15.6",
     "@types/react": "^19",
@@ -33,7 +36,9 @@
     "eslint": "^9",
     "eslint-config-next": "16.0.3",
     "pg": "^8.16.3",
+    "playwright": "^1.56.1",
     "postcss": "^8.5.6",
+    "puppeteer": "^24.31.0",
     "tailwindcss": "^3.4.18",
     "tsx": "^4.20.6",
     "typescript": "^5"

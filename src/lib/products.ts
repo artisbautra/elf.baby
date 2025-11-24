@@ -8,6 +8,7 @@ export interface DatabaseProduct {
   url: string;
   description: string;
   price?: number;
+  price_discount?: number;
   specifications: Record<string, any>;
   images: string[];
   filters: {
@@ -25,6 +26,7 @@ export interface DisplayProduct {
   slug: string;
   title: string;
   price: number;
+  price_discount?: number;
   originalPrice?: number;
   image: string;
   category: string;
@@ -47,11 +49,13 @@ export async function getActiveProducts(): Promise<DisplayProduct[]> {
     .order('created_at', { ascending: false });
 
   if (error) {
-    console.error('Error fetching products:', error);
+    console.error('Error fetching products:', error.message || error);
+    if (error.details) console.error('  Details:', error.details);
+    if (error.hint) console.error('  Hint:', error.hint);
     return [];
   }
 
-  if (!data) {
+  if (!data || data.length === 0) {
     return [];
   }
 
@@ -77,6 +81,7 @@ export async function getActiveProducts(): Promise<DisplayProduct[]> {
       slug: product.slug,
       title: product.title,
       price: product.price || product.specifications?.price || 0,
+      price_discount: product.price_discount,
       originalPrice: product.specifications?.originalPrice,
       image,
       category,
@@ -127,6 +132,7 @@ export async function getProductBySlug(slug: string): Promise<DisplayProduct | n
     slug: product.slug,
     title: product.title,
     price: product.price || product.specifications?.price || 0,
+    price_discount: product.price_discount,
     originalPrice: product.specifications?.originalPrice,
     image,
     category,

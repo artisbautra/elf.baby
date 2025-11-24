@@ -19,13 +19,13 @@ export function ProductGallery({ images, title, isNew }: ProductGalleryProps) {
   return (
     <div className="flex flex-col gap-6">
       {/* Main Image */}
-      <div className="relative aspect-square bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-lg group">
+      <div className="relative aspect-square bg-white rounded-[5px] overflow-hidden border border-slate-100 group">
         {selectedImage.startsWith('http') ? (
           <Image 
             src={selectedImage}
             alt={title}
             fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            className="object-contain p-6 transition-transform duration-500 group-hover:scale-105"
             unoptimized
           />
         ) : (
@@ -34,14 +34,6 @@ export function ProductGallery({ images, title, isNew }: ProductGalleryProps) {
               <div className="text-8xl mb-4">🎁</div>
               <p className="text-sm uppercase tracking-widest">Product Image</p>
             </div>
-          </div>
-        )}
-        
-        {isNew && (
-          <div className="absolute top-6 left-6">
-             <span className="px-4 py-2 bg-festive-red text-white text-sm font-bold uppercase tracking-wider rounded-full shadow-md">
-              New Arrival
-            </span>
           </div>
         )}
       </div>
@@ -54,9 +46,9 @@ export function ProductGallery({ images, title, isNew }: ProductGalleryProps) {
               key={index}
               onClick={() => setSelectedImage(image)}
               className={clsx(
-                "relative aspect-square rounded-xl overflow-hidden border-2 transition-all duration-300",
+                "relative aspect-square rounded-[3px] overflow-hidden border-2 transition-all duration-300",
                 selectedImage === image
-                  ? "border-primary-950 shadow-md scale-95"
+                  ? "border-primary-950 scale-95"
                   : "border-transparent hover:border-slate-300 hover:scale-105"
               )}
             >
@@ -65,7 +57,7 @@ export function ProductGallery({ images, title, isNew }: ProductGalleryProps) {
                   src={image}
                   alt={`${title} thumbnail ${index + 1}`}
                   fill
-                  className="object-cover"
+                  className="object-contain p-1"
                   unoptimized
                 />
               ) : (

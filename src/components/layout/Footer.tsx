@@ -1,18 +1,26 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 export function Footer() {
   return (
-    <footer className="bg-white border-t border-dashed border-slate-300 pt-20 pb-12">
+    <footer className="bg-white border-t border-dashed border-slate-300 pt-8 pb-8">
       <div className="container mx-auto px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-20">
+        <div className="hidden grid grid-cols-1 lg:grid-cols-12 gap-12 mb-20">
           
           {/* Brand Column */}
           <div className="lg:col-span-4 space-y-6">
              <Link href="/" className="inline-block">
-              <span className="font-serif text-4xl font-bold text-primary-950 tracking-tight">elf.baby</span>
+              <Image
+                src="/images/logo.png"
+                alt="elf.baby"
+                width={200}
+                height={60}
+                className="h-10 w-auto object-contain"
+                unoptimized
+              />
             </Link>
             <p className="text-slate-500 text-sm leading-relaxed max-w-xs font-light">
-              We curate magical moments and thoughtful gifts for the little ones and the ones who love them.
+              Gifts are part of the bond of love. That's why I, your little elf, am here to help you find the perfect gifts for your loved ones.
             </p>
           </div>
           
@@ -36,29 +44,13 @@ export function Footer() {
               <li><Link href="#" className="hover:text-secondary-600 transition-colors">Careers</Link></li>
             </ul>
           </div>
-
-          {/* Newsletter */}
-          <div className="lg:col-span-4">
-            <h3 className="font-bold text-xs uppercase tracking-widest text-primary-950 mb-6">Stay Updated</h3>
-            <p className="text-slate-500 text-sm mb-6 font-light">Join our newsletter for exclusive offers and magical gift ideas.</p>
-            <div className="flex border-b border-slate-300 pb-2">
-              <input 
-                type="email" 
-                placeholder="Your email address" 
-                className="flex-1 bg-transparent text-sm focus:outline-none text-primary-950 placeholder-slate-400"
-              />
-              <button className="text-xs font-bold uppercase tracking-widest text-secondary-600 hover:text-secondary-800 transition-colors">
-                Subscribe
-              </button>
-            </div>
-          </div>
         </div>
         
-        <div className="pt-8 border-t border-dashed border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] uppercase tracking-widest text-slate-400 font-medium">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] uppercase tracking-widest text-slate-400 font-medium">
           <p>&copy; 2025 elf.baby. All rights reserved.</p>
           <div className="flex gap-6">
-            <Link href="#">Privacy Policy</Link>
-            <Link href="#">Terms of Service</Link>
+            <Link href="/privacy-policy">Privacy Policy</Link>
+            <Link href="/terms-of-service">Terms of Service</Link>
           </div>
         </div>
       </div>
