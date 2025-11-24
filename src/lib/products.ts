@@ -40,33 +40,43 @@ export interface DisplayProduct {
 }
 
 export async function getActiveProducts(): Promise<DisplayProduct[]> {
-  // During build time, if Supabase env vars are not available, return empty array
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    console.warn('Supabase environment variables not available, returning empty products array');
-    return [];
-  }
-
-  const supabase = await createClient();
+  // Check if Supabase env vars are available
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   
-  const { data, error } = await supabase
-    .from('products')
-    .select('*')
-    .eq('active', true)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching products:', error.message || error);
-    if (error.details) console.error('  Details:', error.details);
-    if (error.hint) console.error('  Hint:', error.hint);
+  if (!supabaseUrl || !supabaseServiceRoleKey) {
+    console.warn('Supabase environment variables not available:');
+    console.warn('  NEXT_PUBLIC_SUPABASE_URL:', supabaseUrl ? '✓' : '✗');
+    console.warn('  SUPABASE_SERVICE_ROLE_KEY:', supabaseServiceRoleKey ? '✓' : '✗');
     return [];
   }
 
-  if (!data || data.length === 0) {
-    return [];
-  }
+  try {
+    const supabase = await createClient();
+    
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('active', true)
+      .order('created_at', { ascending: false });
 
-  // Transform database products to display format
-  return data.map((product: DatabaseProduct) => {
+    if (error) {
+      console.error('Error fetching products:', error.message || error);
+      if (error.details) console.error('  Details:', error.details);
+      if (error.hint) console.error('  Hint:', error.hint);
+      if (error.code) console.error('  Code:', error.code);
+      return [];
+    }
+
+    if (!data || data.length === 0) {
+      console.warn('No products found in database');
+      return [];
+    }
+
+    console.log(`Successfully fetched ${data.length} products`);
+
+    // Transform database products to display format
+    return data.map((product: DatabaseProduct) => {
     // Extract first image or use placeholder
     const image = product.images && product.images.length > 0 
       ? product.images[0] 
@@ -99,6 +109,10 @@ export async function getActiveProducts(): Promise<DisplayProduct[]> {
       specifications: product.specifications,
     };
   });
+  } catch (err) {
+    console.error('Exception while fetching products:', err);
+    return [];
+  }
 }
 
 export async function getProductBySlug(slug: string): Promise<DisplayProduct | null> {
