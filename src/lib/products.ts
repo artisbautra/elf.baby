@@ -45,9 +45,6 @@ export async function getActiveProducts(): Promise<DisplayProduct[]> {
   const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   
   if (!supabaseUrl || !supabaseServiceRoleKey) {
-    console.warn('Supabase environment variables not available:');
-    console.warn('  NEXT_PUBLIC_SUPABASE_URL:', supabaseUrl ? '✓' : '✗');
-    console.warn('  SUPABASE_SERVICE_ROLE_KEY:', supabaseServiceRoleKey ? '✓' : '✗');
     return [];
   }
 
@@ -61,19 +58,12 @@ export async function getActiveProducts(): Promise<DisplayProduct[]> {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching products:', error.message || error);
-      if (error.details) console.error('  Details:', error.details);
-      if (error.hint) console.error('  Hint:', error.hint);
-      if (error.code) console.error('  Code:', error.code);
       return [];
     }
 
     if (!data || data.length === 0) {
-      console.warn('No products found in database');
       return [];
     }
-
-    console.log(`Successfully fetched ${data.length} products`);
 
     // Transform database products to display format
     return data.map((product: DatabaseProduct) => {
@@ -110,7 +100,6 @@ export async function getActiveProducts(): Promise<DisplayProduct[]> {
     };
   });
   } catch (err) {
-    console.error('Exception while fetching products:', err);
     return [];
   }
 }
@@ -118,7 +107,6 @@ export async function getActiveProducts(): Promise<DisplayProduct[]> {
 export async function getProductBySlug(slug: string): Promise<DisplayProduct | null> {
   // During build time, if Supabase env vars are not available, return null
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    console.warn('Supabase environment variables not available, returning null for product');
     return null;
   }
 
@@ -132,7 +120,6 @@ export async function getProductBySlug(slug: string): Promise<DisplayProduct | n
     .single();
 
   if (error || !data) {
-    console.error('Error fetching product by slug:', error);
     return null;
   }
 
