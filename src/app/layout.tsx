@@ -30,15 +30,15 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <meta name="theme-color" content="#ffffff" />
-        {analyticsEnabled && (
-          <script
-            defer
-            src="https://cloud.umami.is/script.js"
-            data-website-id="cacea6b3-28ad-4f01-bbc2-722206b4bf38"
-          />
-        )}
       </head>
       <body className={`${inter.variable} ${playfair.variable} font-sans bg-cream text-slate-900 relative`}>
+        {analyticsEnabled && (
+          <Script
+            src="https://cloud.umami.is/script.js"
+            data-website-id="cacea6b3-28ad-4f01-bbc2-722206b4bf38"
+            strategy="afterInteractive"
+          />
+        )}
         <HeaderProvider>
           <Snowfall />
           {children}
