@@ -40,6 +40,12 @@ export interface DisplayProduct {
 }
 
 export async function getActiveProducts(): Promise<DisplayProduct[]> {
+  // During build time, if Supabase env vars are not available, return empty array
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.warn('Supabase environment variables not available, returning empty products array');
+    return [];
+  }
+
   const supabase = await createClient();
   
   const { data, error } = await supabase
@@ -96,6 +102,12 @@ export async function getActiveProducts(): Promise<DisplayProduct[]> {
 }
 
 export async function getProductBySlug(slug: string): Promise<DisplayProduct | null> {
+  // During build time, if Supabase env vars are not available, return null
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.warn('Supabase environment variables not available, returning null for product');
+    return null;
+  }
+
   const supabase = await createClient();
   
   const { data, error } = await supabase
