@@ -34,6 +34,7 @@ interface AmazonProduct {
   title: string
   url: string
   rank: number
+  isBestSeller?: boolean
 }
 
 /**
@@ -840,6 +841,19 @@ function extractProductUrls(html: string, limit: number = 3, keyword?: string, c
         // Clean up title
         title = title.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'").trim()
         
+        // Check if product has "Best Seller" badge
+        // Look for "Best Seller" text in the context around the product link
+        // Amazon uses various patterns: "Best Seller", "#1 Best Seller", "bestseller", etc.
+        // Also check for common Amazon badge classes and IDs
+        const isBestSeller = /best\s*seller/i.test(fullContext) || 
+                           /#1\s*best\s*seller/i.test(fullContext) ||
+                           /bestseller/i.test(fullContext) ||
+                           /best\s*seller/i.test(contextBefore) ||
+                           /best\s*seller/i.test(contextAfter) ||
+                           /class="[^"]*best[^"]*seller[^"]*"/i.test(fullContext) ||
+                           /id="[^"]*best[^"]*seller[^"]*"/i.test(fullContext) ||
+                           /aria-label="[^"]*best[^"]*seller[^"]*"/i.test(fullContext)
+        
         // Note: Category filtering is done by agents/amazon-bestsellers.md agent, not here
         // This script only finds products from the bestseller page
         // The agent will determine if the product matches the requested category and age group
@@ -847,7 +861,8 @@ function extractProductUrls(html: string, limit: number = 3, keyword?: string, c
         products.push({
           title,
           url,
-          rank: products.length + 1
+          rank: products.length + 1,
+          isBestSeller: isBestSeller
         })
         
         if (products.length >= limit) {
@@ -860,6 +875,13 @@ function extractProductUrls(html: string, limit: number = 3, keyword?: string, c
       break
     }
   }
+  
+  // Sort products: Best Sellers first, then others
+  products.sort((a, b) => {
+    if (a.isBestSeller && !b.isBestSeller) return -1
+    if (!a.isBestSeller && b.isBestSeller) return 1
+    return a.rank - b.rank // Maintain original order for same priority
+  })
   
   // If we didn't find enough products, try a more aggressive search
   if (products.length < limit) {
@@ -876,10 +898,24 @@ function extractProductUrls(html: string, limit: number = 3, keyword?: string, c
       
       if (!foundUrls.has(url)) {
         foundUrls.add(url)
+        
+        // Check for Best Seller badge in context around this link
+        const contextBefore = html.substring(Math.max(0, match.index! - 500), match.index)
+        const contextAfter = html.substring(match.index! + match[0].length, match.index! + match[0].length + 500)
+        const fullContext = contextBefore + match[0] + contextAfter
+        
+        const isBestSeller = /best\s*seller/i.test(fullContext) || 
+                           /#1\s*best\s*seller/i.test(fullContext) ||
+                           /bestseller/i.test(fullContext) ||
+                           /class="[^"]*best[^"]*seller[^"]*"/i.test(fullContext) ||
+                           /id="[^"]*best[^"]*seller[^"]*"/i.test(fullContext) ||
+                           /aria-label="[^"]*best[^"]*seller[^"]*"/i.test(fullContext)
+        
         products.push({
           title: 'Amazon Product',
           url,
-          rank: products.length + 1
+          rank: products.length + 1,
+          isBestSeller: isBestSeller
         })
         
         if (products.length >= limit) {
@@ -887,6 +923,13 @@ function extractProductUrls(html: string, limit: number = 3, keyword?: string, c
         }
       }
     }
+    
+    // Re-sort after adding fallback products
+    products.sort((a, b) => {
+      if (a.isBestSeller && !b.isBestSeller) return -1
+      if (!a.isBestSeller && b.isBestSeller) return 1
+      return a.rank - b.rank
+    })
   }
   
   return products.slice(0, limit)
@@ -1040,7 +1083,8 @@ async function main() {
       
       // Process the first product found
       const product = products[0]
-      console.log(`\n📦 Found product: ${product.title.substring(0, 60)}...`)
+      const bestSellerBadge = product.isBestSeller ? ' 🏆 BEST SELLER' : ''
+      console.log(`\n📦 Found product: ${product.title.substring(0, 60)}...${bestSellerBadge}`)
       console.log(`URL: ${product.url}\n`)
       
       // Extract affiliate link first (needed for checklist check)

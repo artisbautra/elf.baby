@@ -45,3 +45,6 @@ next-env.d.ts
 /tmp/
 tmp/
 *.temp.json
+
+# checklist files
+agents/data/amazon-bestsellers-checklist.md
