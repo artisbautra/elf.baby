@@ -435,7 +435,7 @@ async function findOrCreateAmazonShop(supabase: ReturnType<typeof createAdminCli
 
   if (error) {
     // If error is about duplicate or internal server error, try to find it one more time
-    if (error.message.includes('duplicate') || error.message.includes('unique') || error.message.includes('Internal server error')) {
+    if (error?.message?.includes('duplicate') || error?.message?.includes('unique') || error?.message?.includes('Internal server error')) {
       console.log('   ⚠️  Shop might already exist. Trying to find it one more time...')
       const { data: foundShop } = await supabase
         .from('shops')
@@ -444,12 +444,13 @@ async function findOrCreateAmazonShop(supabase: ReturnType<typeof createAdminCli
         .maybeSingle()
       
       if (foundShop) {
-        console.log(`✓ Found Amazon shop: ${foundShop.title} (ID: ${foundShop.id})`)
+        const shop = foundShop!
+        console.log(`✓ Found Amazon shop: ${shop.title} (ID: ${shop.id})`)
         await supabase
           .from('shops')
           .update({ active: true })
-          .eq('id', foundShop.id)
-        return foundShop
+          .eq('id', shop.id)
+        return shop
       }
       // If still not found but error suggests it exists, try known Amazon shop ID again
       console.log(`   ⚠️  Trying fallback: using known Amazon shop ID...`)
@@ -460,18 +461,19 @@ async function findOrCreateAmazonShop(supabase: ReturnType<typeof createAdminCli
         .maybeSingle()
       
       if (fallbackShop) {
-        console.log(`✓ Found Amazon shop by known ID: ${fallbackShop.title} (ID: ${fallbackShop.id})`)
+        const shop = fallbackShop!
+        console.log(`✓ Found Amazon shop by known ID: ${shop.title} (ID: ${shop.id})`)
         await supabase
           .from('shops')
           .update({ active: true })
-          .eq('id', fallbackShop.id)
-        return fallbackShop
+          .eq('id', shop.id)
+        return shop
       }
       
       // If all else fails, throw error
-      throw new Error(`Amazon shop might already exist but could not be found. Please check the database manually. Original error: ${error.message}`)
+      throw new Error(`Amazon shop might already exist but could not be found. Please check the database manually. Original error: ${error?.message || 'Unknown error'}`)
     }
-    throw new Error(`Failed to create Amazon shop: ${error.message}`)
+    throw new Error(`Failed to create Amazon shop: ${error?.message || 'Unknown error'}`)
   }
 
   console.log(`✅ Created Amazon shop: ${newShop.title} (ID: ${newShop.id})`)
